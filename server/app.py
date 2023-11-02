@@ -485,7 +485,8 @@ class Home(Resource):
         response = make_response(jsonify(response_dict), 200)
 
         return response
-
+    
+api.add_resource(Home, '/')
 api.add_resource(LoginResource, '/login')
 api.add_resource(RegistrationResource, '/register')
 api.add_resource(ReturnRequestResource, '/returnrequests', '/returnrequests/<int:id>')
