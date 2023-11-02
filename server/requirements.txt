@@ -24,4 +24,5 @@ pytest
 SQLAlchemy
 SQLAlchemy-serializer
 Werkzeug
-
+datetime
+cryptography
