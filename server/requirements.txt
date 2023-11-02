@@ -26,3 +26,5 @@ SQLAlchemy-serializer
 Werkzeug
 datetime
 cryptography
+Bcrypt
+PyJWT
