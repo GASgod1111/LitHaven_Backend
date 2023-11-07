@@ -51,6 +51,7 @@ admin_fields = {
 
 book_fields = {
     'BookID': fields.Integer,
+    'Book_Image': fields.Url,
     'Title': fields.String,
     'Author': fields.String,
     'Genre': fields.String,
@@ -97,6 +98,7 @@ class BookResource(Resource):
     def post(self):
         data = request.form
         new_book = Book(
+            Book_Image=data['Book_Image'],
             Title=data['Title'],
             Author=data['Author'],
             Genre=data['Genre'],
@@ -127,6 +129,7 @@ class BookResource(Resource):
         if book is not None:
             try:
                 data = request.form
+                book.Book_Image = data['Book_Image']
                 book.Title = data['Title']
                 book.Author = data['Author']
                 book.Genre = data['Genre']
