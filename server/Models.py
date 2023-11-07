@@ -21,6 +21,7 @@ class Admin(db.Model):
 
 class Book(db.Model):
     BookID = db.Column(db.Integer, primary_key=True)
+    Book_Image = db.Column(db.String)
     Title = db.Column(db.String(255))
     Author = db.Column(db.String(255))
     Genre = db.Column(db.String(255))
@@ -31,6 +32,7 @@ class Book(db.Model):
     def to_dict(self):
         return {
             'BookID': self.BookID,
+            'Book_Image': self.Book_Image,
             'Title': self.Title,
             'Author': self.Author,
             'Genre': self.Genre,

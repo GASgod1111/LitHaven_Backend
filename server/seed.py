@@ -4,7 +4,32 @@ from faker import Faker
 import random
 from datetime import datetime
 
+
 fake = Faker()
+
+book_images = [
+    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJvb2t8ZW58MHx8MHx8fDA%3D',
+    'https://static01.nyt.com/images/2023/05/02/books/02erin-langston-cover/02erin-langston-cover-superJumbo.jpg?quality=75&auto=webp',
+    'https://static01.nyt.com/images/2023/05/16/books/16samara-breger-cover/16samara-breger-cover-jumbo.jpg?quality=75&auto=webp',
+    'https://static01.nyt.com/images/2023/05/02/books/02kristina-forest-cover/02kristina-forest-cover-jumbo.jpg?quality=75&auto=webp',
+    'https://static01.nyt.com/images/2023/01/24/books/24EMMA-BARRY-COVER/24EMMA-BARRY-COVER-superJumbo.jpg?quality=75&auto=webp',
+    'https://static01.nyt.com/images/2023/06/30/books/30rebekah-weatherspoon-cover/30rebekah-weatherspoon-cover-jumbo.jpg?quality=75&auto=webp',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018245-71EFaIUUbfL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018349-81FdfnFjOUS.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018391-91BbLCJOruL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018490-813WHPxt3eL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018585-816JLxXG3YL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018684-91q62eNpqGL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018725-81N-xC3Se6L.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689018773-91fqdoW5QzL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689020220-9102oXzvz1L.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1688059089-81UOA8fDGaL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689020333-61lwEOkIKHL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689020497-61MSV64Sl6L.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689020549-61L-Bf01LAL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1689020709-91gOB5yRilL.jpg?crop=1xw:1xh;center,top&resize=980:*',
+    'https://m.media-amazon.com/images/I/41mjffV8MPL._SY445_SX342_.jpg'
+]
 
 # Create sample data using Faker to seed the database
 def seed_data():
@@ -36,11 +61,12 @@ def seed_data():
     books = []
     for _ in range(30):
         book = Book(
-            Title=fake.sentence(nb_words=3),
+            Book_Image= random.choice(book_images),
+            Title=fake.sentence(nb_words=3, variable_nb_words=True, ext_word_list=None),
             Author=fake.name(),
             Genre=fake.random_element(elements=('Fiction', 'Non-Fiction', 'Mystery', 'Romance', 'Science Fiction', 'Fantasy')),
-            Description=fake.paragraph(nb_sentences=5),
-            Price=fake.random_int(min=5, max=50),
+            Description=fake.text(),
+            Price=random.randint(5, 50),
             Date_Uploaded=datetime.now()
         )
         books.append(book)
@@ -53,7 +79,7 @@ def seed_data():
             UserID=random.randint(1, 100),
             AdminID=random.randint(1, 100),
             BookID=random.randint(1, 100),
-            Status=fake.word()
+            Status=fake.random_element(elements=('Approved', 'Rejected', 'Pending')),
         )
         book_orders.append(book_order)
         db.session.add(book_order)
@@ -65,7 +91,7 @@ def seed_data():
             UserID=random.randint(1, 100),
             AdminID=random.randint(1, 100),
             BookID=random.randint(1, 100),
-            Status=fake.word()
+            Status=fake.random_element(elements=('Approved', 'Rejected', 'Pending')),
         )
         book_lending_requests.append(book_lending_request)
         db.session.add(book_lending_request)
@@ -76,7 +102,7 @@ def seed_data():
         cart = Cart(
             UserID=random.randint(1, 100),
             AdminID=random.randint(1, 100),
-            Status=fake.word()
+            Status=fake.random_element(elements=('Approved', 'Rejected', 'Pending')),
         )
         carts.append(cart)
         db.session.add(cart)
@@ -99,7 +125,7 @@ def seed_data():
             UserID=random.randint(1, 100),
             AdminID=random.randint(1, 100),
             OrderID=random.randint(1, 100),
-            Total_Amount=fake.random_int(min=5, max=900),
+            Total_Amount=random.randint(5, 900),
             Purchase_Date=datetime.now()
         )
         purchases.append(purchase)
@@ -112,8 +138,8 @@ def seed_data():
             UserID=random.randint(1, 100),
             AdminID=random.randint(1, 100),
             OrderID=random.randint(1, 100),
-            Return_Reason=fake.text(),
-            Status=fake.word()
+            Return_Reason=fake.random_element(elements=('Finished Reading', 'Lending period expired', 'Got bored of the book')),
+            Status=fake.random_element(elements=('Approved', 'Pending')),
         )
         return_requests.append(return_request)
         db.session.add(return_request)
