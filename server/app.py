@@ -1,17 +1,44 @@
+import datetime
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_restful import Api, Resource, fields, marshal_with
 from Models import db, Admin, Book, User, Cart, CartItem, Purchase, ReturnRequest
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_cors import CORS
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+import secrets
+import os
+import logging
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
 
 app = Flask(__name__)
+
+def generate_jwt_key():
+    secret_key = secrets.token_urlsafe(32)
+    return secret_key
+
+# app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['JWT_SECRET_KEY'] = generate_jwt_key 
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
+
+@login_manager.user_loader
+def load_user(UserID):
+    return User.query.get(int(UserID))
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
-app.config['JWT_SECRET_KEY'] = 'a&Tn7Rc`,6^8R/<Xqg0w"u[:S\9OIbk5' 
+
 migrate = Migrate(app, db)
+CORS(app)
 db.init_app(app)
 api = Api(app)
-jwt = JWTManager(app)
+
 
 # Define resource fields for marshaling
 admin_fields = {
@@ -438,25 +465,73 @@ class ReturnRequestResource(Resource):
             return {'message': 'Return request deleted successfully'}
         return {'message': 'Return request not found'}, 404
 
+# class LoginResource(Resource):
+#     def post(self):
+#         data = request.get_json()
+#         Username = data.get('Username')
+#         Password = data.get('Password')
+
+      
+#         user = User.query.filter_by(Username=Username, Password=Password).first()
+        
+#         if not User.Username or not User.Password:
+#             return {"message": "Missing username or password"}, 400
+
+#         if user:
+#             # return "hello"
+#             access_token = create_access_token(User.Username)
+#             return jsonify({"access_token": access_token}), 200
+#         else:
+#             return {"message": "Invalid username or password"}, 401
+
+# class LoginResource(Resource):
+#     def post(self):
+#         data = request.get_json()  # Use request.get_json() to get JSON data
+
+#         response = None  # Initialize the response variable
+
+#         if not data or 'Username' not in data or 'Password' not in data:
+#             response = make_response(jsonify(message='Invalid request'), 400)
+#         else:
+#             Username = data['Username']
+#             Password = data['Password']
+#             user = User.query.filter_by(Username=Username).first()
+
+#             if user and check_password_hash(user.Password, Password):
+#                 access_token = create_access_token(identity=user.UserID)
+#                 response = make_response(jsonify(access_token=access_token), 200)
+#             else:
+#                 response = make_response(jsonify(message='Invalid username or password'), 401)
+
+#         return response
+
 class LoginResource(Resource):
     def post(self):
-        data = request.get_json(force=True)
-        username = data.get('username')
-        password = data.get('password')
+        data = request.get_json()  # Use request.get_json() to get JSON data
 
-        if not username or not password:
-            return {"message": "Missing username or password"}, 400
+        response = None  # Initialize the response variable
 
-        user = User.query.filter_by(Username=username, Password=password).first()
-
-        if user:
-            access_token = create_access_token(identity=username)
-            return jsonify({"access_token": access_token}), 200
+        if not data or 'Username' not in data or 'Password' not in data:
+            response = make_response(jsonify(message='Invalid request'), 400)
         else:
-            return {"message": "Invalid username or password"}, 401
+            Username = data['Username']
+            # Assuming User is your SQLAlchemy model representing the user table
+            user = User.query.filter_by(Username=Username).first()
 
+            if user and (user.Password, data['Password']):
+                # Continue with the authentication process
+                # access_token = create_access_token(identity=user.UserID)
+                # response = make_response(jsonify(access_token=access_token), 200)
+                return jsonify({'message': 'Login successful'})
+            else:
+                response = make_response(jsonify(message='Invalid username or password'), 401)
+
+        return response
+
+   
 class RegistrationResource(Resource):
    def post(self):
+        
         data = request.get_json()
         username = data.get('Username')
         password = data.get('Password')
@@ -476,6 +551,27 @@ class RegistrationResource(Resource):
         db.session.commit()
 
         return {"message": "User created successfully"}, 201
+   
+    #    *** For hashed passwords
+        # data = request.get_json()
+        # username = data.get('Username')
+        # hashed_password = bcrypt.generate_password_hash(data['Password']).decode('utf-8')
+        # Email = data.get('Email')
+        # Full_Name = data.get('Full_Name')
+
+        # if not username or not hashed_password:
+        #     return {"message": "Missing username or password"}, 400
+        
+        # user = User.query.filter_by(Username=username).first()
+
+        # if user:
+        #     return {"message": "User already exists"}, 400
+
+        # new_user = User(Username=username, Password=hashed_password, Email=Email, Full_Name=Full_Name)
+        # db.session.add(new_user)
+        # db.session.commit()
+
+        # return {"message": "User created successfully"}, 201
     
 class Home(Resource):
     def get(self):
@@ -486,6 +582,14 @@ class Home(Resource):
 
         return response
     
+# def clear_data(session):
+#     meta = db.metadata
+#     for table in reversed(meta.sorted_tables):
+#         print 'Clear table %s' % table
+#         session.execute(table.delete())
+#     session.commit()
+
+
 api.add_resource(Home, '/')
 api.add_resource(LoginResource, '/login')
 api.add_resource(RegistrationResource, '/register')
