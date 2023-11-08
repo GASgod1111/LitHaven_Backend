@@ -25,7 +25,7 @@ app = Flask(__name__)
 api = CaseInsensitiveApi(app) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'  # Replace with your actual database URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'E,BArL*+RT@AbfQ[s:aUomQ3[F4@|&Bw' 
+app.config['JWT_SECRET_KEY'] = '9f36bc095fbf40bbb94d9938bcac8847'
 
 migrate = Migrate(app, db)
 api = Api(app)
@@ -748,7 +748,6 @@ class CheckoutManagement(Resource):
             for item in cart_items:
                 lending_request = BookLendingRequest(
                     UserID=UserID,
-                    AdminID=item.book.AdminID,
                     BookID=item.BookID,
                     Status='Pending'
                 )
@@ -760,7 +759,6 @@ class CheckoutManagement(Resource):
                 total_amount += item.book.Price * item.Quantity
                 book_order = BookOrder(
                     UserID=UserID,
-                    AdminID=item.book.AdminID,
                     BookID=item.BookID,
                     Status='Pending'
                 )
@@ -806,7 +804,8 @@ class CartManagement(Resource):
 
         return {'message': 'Books added to the cart successfully'}, 200
 
-    def delete(self, UserID, BookID):
+class CartManagementDelete(Resource):
+    def delete(self, UserID, CartID):
         Cart_Type = request.args.get('Cart_Type')  # Indicates lending or purchasing cart
 
         user = User.query.get(UserID)
@@ -817,14 +816,13 @@ class CartManagement(Resource):
         if not cart:
             return {'message': 'Cart not found'}, 404
 
-        cart_item = CartItem.query.filter_by(CartID=cart.CartID, BookID=BookID).first()
+        cart_item = CartItem.query.filter_by(CartID=CartID, BookID=CartItem.BookID).first()
         if cart_item:
             db.session.delete(cart_item)
             db.session.commit()
             return {'message': 'Book removed from the cart successfully'}, 200
         else:
             return {'message': 'Book not found in the cart'}, 404
-
 
 class CartList(Resource):
     def get(self):
@@ -1194,27 +1192,6 @@ class UserRegistration(Resource):
 
         return {"message": "User created successfully"}, 201
     
-      #    *** For hashed passwords
-        # data = request.get_json()
-        # username = data.get('Username')
-        # hashed_password = bcrypt.generate_password_hash(data['Password']).decode('utf-8')
-        # Email = data.get('Email')
-        # Full_Name = data.get('Full_Name')
-
-        # if not username or not hashed_password:
-        #     return {"message": "Missing username or password"}, 400
-        
-        # user = User.query.filter_by(Username=username).first()
-
-        # if user:
-        #     return {"message": "User already exists"}, 400
-
-        # new_user = User(Username=username, Password=hashed_password, Email=Email, Full_Name=Full_Name)
-        # db.session.add(new_user)
-        # db.session.commit()
-
-        # return {"message": "User created successfully"}, 201
-    
 class AdminLogin(Resource):
     def post(self):
         data = request.get_json()  # Use request.get_json() to get JSON data
@@ -1225,14 +1202,15 @@ class AdminLogin(Resource):
             response = make_response(jsonify(message='Invalid request'), 400)
         else:
             Username = data['Username']
+            Password = data['Password']
             # Assuming User is your SQLAlchemy model representing the user table
-            user = Admin.query.filter_by(Username=Username).first()
+            admin = Admin.query.filter_by(Username=Username).first()
 
-            if user and (user.Password, data['Password']):
+            if admin and (admin.Password == Password):
                 # Continue with the authentication process
-                # access_token = create_access_token(identity=user.UserID)
-                # response = make_response(jsonify(access_token=access_token), 200)
-                return jsonify({'message': 'Admin login successful'})
+                access_token = create_access_token(identity=admin.AdminID)
+                response = make_response(jsonify(access_token=access_token), 200)
+                # return jsonify({'message': 'Admin login successful'})
             else:
                 response = make_response(jsonify(message='Invalid username or password'), 401)
 
@@ -1248,73 +1226,17 @@ class UserLogin(Resource):
             response = make_response(jsonify(message='Invalid request'), 400)
         else:
             Username = data['Username']
+            Password = data['Password']
             # Assuming User is your SQLAlchemy model representing the user table
             user = User.query.filter_by(Username=Username).first()
 
-            if user and (user.Password, data['Password']):
-                # Continue with the authentication process
-                # access_token = create_access_token(identity=user.UserID)
-                # response = make_response(jsonify(access_token=access_token), 200)
-                return jsonify({'message': 'User Login successful'})
+            if user and (user.Password == Password):
+                access_token = create_access_token(identity=user.UserID)
+                response = make_response(jsonify(access_token=access_token), 200)
             else:
                 response = make_response(jsonify(message='Invalid username or password'), 401)
 
         return response
-        # ***hashed password
-    #     data = request.get_json()
-    #     username = data.get('Username')
-    #     hashed_password = bcrypt.generate_password_hash(data['Password']).decode('utf-8')
-    #     Email = data.get('Email')
-    #     Full_Name = data.get('Full_Name')
-
-    #     if not username or not hashed_password:
-    #         return {"message": "Missing username or password"}, 400
-        
-    #     user = User.query.filter_by(Username=username).first()
-
-    #     if user:
-    #         return {"message": "User already exists"}, 400
-
-    #     new_user = User(Username=username, Password=hashed_password, Email=Email, Full_Name=Full_Name)
-    #     db.session.add(new_user)
-    #     db.session.commit()
-
-    #     return {"message": "User created successfully"}, 201
-    
-    # #  def post(self):
-
-    #     username = request.get_json()['username']
-    #     user = User.query.filter(User.username == username)
-
-    #     password = request.get_json()['password']
-    #     if password == user.password:
-    #         session['UserID'] = user.id
-    #         return user.to_dict(), 200
-
-    #     return {'error': 'Invalid username or password'}, 401
-
-        # def post(self):
-         #    *** For hashed passwords
-        # data = request.get_json()
-        # username = data.get('Username')
-        # hashed_password = bcrypt.generate_password_hash(data['Password']).decode('utf-8')
-        # Email = data.get('Email')
-        # Full_Name = data.get('Full_Name')
-
-        # if not username or not hashed_password:
-        #     return {"message": "Missing username or password"}, 400
-        
-        # user = User.query.filter_by(Username=username).first()
-
-        # if user:
-        #     return {"message": "User already exists"}, 400
-
-        # new_user = User(Username=username, Password=hashed_password, Email=Email, Full_Name=Full_Name)
-        # db.session.add(new_user)
-        # db.session.commit()
-
-        # return {"message": "User created successfully"}, 201
-    
 
 class DeleteAll(Resource):
     def delete(self, OrderID):
@@ -1361,6 +1283,7 @@ api.add_resource(CartList, "/carts")
 # api.add_resource(CartById, "/carts/<int:CartID>")
 api.add_resource(CheckoutManagement, '/users/<int:UserID>/checkout')
 api.add_resource(CartManagement, '/users/<int:UserID>/carts')
+api.add_resource(CartManagementDelete, '/users/<int:UserID>/carts/<int:CartID>')
 # api.add_resource(CartItemList, "/cartitems")
 # api.add_resource(CartItemById, "/cartitems/<int:CartItemID>")
 api.add_resource(BookOrdersList, "/bookorders")
