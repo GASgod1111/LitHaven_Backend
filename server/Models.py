@@ -1,153 +1,96 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-
+from enum import Enum
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 
-class Admin(db.Model):
+class Admin(db.Model, SerializerMixin):
+    __tablename__ = 'Admin'
     AdminID = db.Column(db.Integer, primary_key=True)
-    Username = db.Column(db.String(255))
-    Password = db.Column(db.String(255))
-    Email = db.Column(db.String(255))
-    Full_Name = db.Column(db.String(255))
+    Username = db.Column(db.String, nullable=False, unique=True)
+    Password = db.Column(db.String, nullable=False)
+    Email = db.Column(db.String, nullable=False, unique=True)
+    Full_Name = db.Column(db.String, nullable=False)
+    book_orders = db.relationship("BookOrder", backref="admin")
+    book_lending_requests = db.relationship("BookLendingRequest", backref="admin")
+    carts = db.relationship("Cart", backref="admin")
+    purchases = db.relationship("Purchase", backref="admin")
+    return_requests = db.relationship("ReturnRequest", backref="admin")
 
-    def to_dict(self):
-        return {
-            'AdminID': self.AdminID,
-            'Username': self.Username,
-            'Password': self.Password,
-            'Email': self.Email,
-            'Full_Name': self.Full_Name
-        }
-
-class Book(db.Model):
+class Book(db.Model, SerializerMixin):
+    __tablename__ = 'Book'
     BookID = db.Column(db.Integer, primary_key=True)
+    #img column can put a link
     Book_Image = db.Column(db.String)
-    Title = db.Column(db.String(255))
-    Author = db.Column(db.String(255))
-    Genre = db.Column(db.String(255))
-    Description = db.Column(db.String(255))
+    Title = db.Column(db.String, nullable=False)
+    Author = db.Column(db.String, nullable=False)
+    Genre = db.Column(db.String, nullable=False)
+    Description = db.Column(db.String)
     Price = db.Column(db.Float)
-    Date_Uploaded = db.Column(db.DateTime)
+    Date_Uploaded = db.Column(db.DateTime, default=datetime.utcnow)
+    cart_items = db.relationship("CartItem", backref="book")
+    book_orders = db.relationship("BookOrder", backref="book")
+    book_lending_requests = db.relationship("BookLendingRequest", backref="book")
 
-    def to_dict(self):
-        return {
-            'BookID': self.BookID,
-            'Book_Image': self.Book_Image,
-            'Title': self.Title,
-            'Author': self.Author,
-            'Genre': self.Genre,
-            'Description': self.Description,
-            'Price': self.Price,
-            'Date_Uploaded': self.Date_Uploaded.strftime('%Y-%m-%d %H:%M:%S')
-        }
-
-class BookOrder(db.Model):
+class BookOrder(db.Model, SerializerMixin):
+    __tablename__ = 'BookOrder'
     OrderID = db.Column(db.Integer, primary_key=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'))
-    AdminID = db.Column(db.Integer, db.ForeignKey('admin.AdminID'))
-    BookID = db.Column(db.Integer, db.ForeignKey('book.BookID'))
-    Status = db.Column(db.String(255))
+    UserID = db.Column(db.Integer, db.ForeignKey('User.UserID'))
+    AdminID = db.Column(db.Integer, db.ForeignKey('Admin.AdminID'))
+    BookID = db.Column(db.Integer, db.ForeignKey('Book.BookID'))
+    Status = db.Column(db.String)
 
-    def to_dict(self):
-        return {
-            'OrderID': self.OrderID,
-            'UserID': self.UserID,
-            'AdminID': self.AdminID,
-            'BookID': self.BookID,
-            'Status': self.Status
-        }
-
-class BookLendingRequest(db.Model):
+class BookLendingRequest(db.Model, SerializerMixin):
+    __tablename__ = 'BookLendingRequest'
     RequestID = db.Column(db.Integer, primary_key=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'))
-    AdminID = db.Column(db.Integer, db.ForeignKey('admin.AdminID'))
-    BookID = db.Column(db.Integer, db.ForeignKey('book.BookID'))
-    Status = db.Column(db.String(255))
+    UserID = db.Column(db.Integer, db.ForeignKey('User.UserID'))
+    AdminID = db.Column(db.Integer, db.ForeignKey('Admin.AdminID'))
+    BookID = db.Column(db.Integer, db.ForeignKey('Book.BookID'))
+    Status = db.Column(db.String)
 
-    def to_dict(self):
-        return {
-            'RequestID': self.RequestID,
-            'UserID': self.UserID,
-            'AdminID': self.AdminID,
-            'BookID': self.BookID,
-            'Status': self.Status
-        }
-
-class User(db.Model):
+class User(db.Model, SerializerMixin):
+    __tablename__ = 'User'
     UserID = db.Column(db.Integer, primary_key=True)
-    Username = db.Column(db.String(255))
-    Password = db.Column(db.String(255))
-    Email = db.Column(db.String(255))
-    Full_Name = db.Column(db.String(255))
+    Username = db.Column(db.String, nullable=False, unique=True)
+    Password = db.Column(db.String, nullable=False)
+    Email = db.Column(db.String, nullable=False, unique=True)
+    Full_Name = db.Column(db.String, nullable=False)
+    carts = db.relationship("Cart", backref="user")
+    purchases = db.relationship("Purchase", backref="user")
+    return_requests = db.relationship("ReturnRequest", backref="user")
+    book_orders = db.relationship("BookOrder", backref="user")
+    book_lending_requests = db.relationship("BookLendingRequest", backref="user")
 
-    def to_dict(self):
-        return {
-            'UserID': self.UserID,
-            'Username': self.Username,
-            'Password': self.Password,
-            'Email': self.Email,
-            'Full_Name': self.Full_Name
-        }
-
-class Cart(db.Model):
+class Cart(db.Model, SerializerMixin):
+    __tablename__ = 'Cart'
     CartID = db.Column(db.Integer, primary_key=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'))
-    AdminID = db.Column(db.Integer, db.ForeignKey('admin.AdminID'))
-    Status = db.Column(db.String(255))
+    UserID = db.Column(db.Integer, db.ForeignKey('User.UserID'))
+    AdminID = db.Column(db.Integer, db.ForeignKey('Admin.AdminID'))
+    Cart_Type = db.Column(db.Enum('Purchase', 'Lending'))   
+    cart_items = db.relationship("CartItem", backref="cart")
 
-    def to_dict(self):
-        return {
-            'CartID': self.CartID,
-            'UserID': self.UserID,
-            'AdminID': self.AdminID,
-            'Status': self.Status
-        }
-
-class CartItem(db.Model):
+class CartItem(db.Model, SerializerMixin):
+    __tablename__ = 'CartItem'
     CartItemID = db.Column(db.Integer, primary_key=True)
-    CartID = db.Column(db.Integer, db.ForeignKey('cart.CartID'))
-    BookID = db.Column(db.Integer, db.ForeignKey('book.BookID'))
-    Quantity = db.Column(db.Integer)
+    CartID = db.Column(db.Integer, db.ForeignKey('Cart.CartID'))
+    BookID = db.Column(db.Integer, db.ForeignKey('Book.BookID'))
+    Quantity = db.Column(db.Integer, nullable=False)
 
-    def to_dict(self):
-        return {
-            'CartItemID': self.CartItemID,
-            'CartID': self.CartID,
-            'BookID': self.BookID,
-            'Quantity': self.Quantity
-        }
-
-class Purchase(db.Model):
+class Purchase(db.Model, SerializerMixin):
+    __tablename__ = 'Purchase'
     PurchaseID = db.Column(db.Integer, primary_key=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'))
-    AdminID = db.Column(db.Integer, db.ForeignKey('admin.AdminID'))
-    OrderID = db.Column(db.Integer, db.ForeignKey('book_order.OrderID'))
+    UserID = db.Column(db.Integer, db.ForeignKey('User.UserID'))
+    AdminID = db.Column(db.Integer, db.ForeignKey('Admin.AdminID'))
+    OrderID = db.Column(db.Integer, db.ForeignKey('BookOrder.OrderID'))
     Total_Amount = db.Column(db.Float)
-    Purchase_Date = db.Column(db.DateTime)
+    Purchase_Date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
-        return {
-            'PurchaseID': self.PurchaseID,
-            'UserID': self.UserID,
-            'AdminID': self.AdminID,
-            'OrderID': self.OrderID,
-            'Total_Amount': self.Total_Amount
-        }
-
-class ReturnRequest(db.Model):
+class ReturnRequest(db.Model, SerializerMixin):
+    __tablename__ = 'ReturnRequest'
     RequestID = db.Column(db.Integer, primary_key=True)
-    UserID = db.Column(db.Integer, db.ForeignKey('user.UserID'))
-    AdminID = db.Column(db.Integer, db.ForeignKey('admin.AdminID'))
-    OrderID = db.Column(db.Integer, db.ForeignKey('book_order.OrderID'))
-    Return_Reason = db.Column(db.String(255))
-    Status = db.Column(db.String(255))
+    UserID = db.Column(db.Integer, db.ForeignKey('User.UserID'))
+    AdminID = db.Column(db.Integer, db.ForeignKey('Admin.AdminID'))
+    OrderID = db.Column(db.Integer, db.ForeignKey('BookOrder.OrderID'))
+    Return_Reason = db.Column(db.String)
+    Status = db.Column(db.String)
 
-    def to_dict(self):
-        return {
-            'RequestID': self.RequestID,
-            'UserID': self.UserID,
-            'AdminID': self.AdminID,
-            'OrderID': self.OrderID,
-            'Return_Reason': self.Return_Reason,
-            'Status': self.Status
-        }
