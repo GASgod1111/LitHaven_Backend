@@ -8,34 +8,34 @@
 
 <h5>Administrator (Admin) </h5>
 
-<p>The following are functionalities executed by the administrator through the provided API endpoints:
+<p>The following are functionalities executed by the administrator through the provided API endpoints:</p>
 
-    - Authourization - An admin can register for an account and login
-    - Add a new book to the store.
-    - Update and delete a book from the store.
-    - Approve or reject all book orders (purchases).
-    - Approve or reject all book lending requests.
-    - View all books in the store and library.
- </p>
+<p>- Authourization - An admin can register for an account and login.</p>
+<p>- Add a new book to the store.</p>
+<p>- Update and delete a book from the store.</p>
+<p>- Approve or reject all book orders (purchases).</p>
+<p>- Approve or reject all book lending requests.</p>
+<p>- View all books in the store and library.</p>
 
+ 
  <h5>User </h5>
 
 <p>A user is a person looking to purchase or borrow books.</p>
 
-<p>The following are functionalities accessible to the user through the provided API endpoints:
+<p>The following are functionalities accessible to the user through the provided API endpoints:</p>
 
-    - Authourization - An user can register for an account and login
-    - View all books in the store.
-    - View all books in the library.
-    - Search for books by name or genre.
-    - Filter books by date uploaded, price, and genre.
-    - Add books to the lending cart.
-    - Add books to the purchasing cart.
-    - Checkout books from individual carts.
-    - Pay for approved orders.
-    - Initiate a return requests (For books that were lent out)
-    - View a list of all previous purchases and lendings.
-</p>
+<p>- Authourization - An user can register for an account and login.</p>
+<p>- View all books in the store.</p>
+<p>- View all books in the library.</p>
+<p>- Search for books by name or genre.</p>
+<p>- Filter books by date uploaded, price, and genre.</p>
+<p>- Add books to the lending cart.</p>
+<p>- Add books to the purchasing cart.</p>
+<p>- Checkout books from individual carts.</p>
+<p>- Pay for approved orders.</p>
+<p>- Initiate a return requests (For books that were lent out).</p>
+<p>- View a list of all previous purchases and lendings.</p>
+
 
 <h2>Technologies Used</h2>
 
@@ -50,12 +50,11 @@
 
 <h2>Project Team</h2>
 
-<p>1. Frida Gathima </p>
-<p>2. Reagan Peter </p>
-<p>3. Issak Said</p>
-<p>4. Olive Muthui </p>
-<p>5. Ian Imbuki </p>
-</p>
+<p>- Frida Gathima </p>
+<p>- Reagan Peter </p>
+<p>- Issak Said</p>
+<p>- Olive Muthui </p>
+<p>- Ian Imbuki </p>
 
 <h2>MIT Licence</h2>
 
