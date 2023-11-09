@@ -6,7 +6,7 @@
 
 <p>This flask-based API provides endpoints to create and manage users and administrators.</p>
 
-<h5>Administrator (Admin) </h5>
+<h2>Administrator (Admin) </h2>
 
 <p>The following are functionalities executed by the administrator through the provided API endpoints:</p>
 
@@ -18,7 +18,7 @@
 <p>- View all books in the store and library.</p>
 
  
- <h5>User </h5>
+ <h2>User </h2>
 
 <p>A user is a person looking to purchase or borrow books.</p>
 
