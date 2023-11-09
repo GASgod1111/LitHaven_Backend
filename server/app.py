@@ -1365,6 +1365,7 @@ class UserLogin(Resource):
     #     return {'error': 'User not found'}, 400
 
 # api.add_resource(PaymentsResource, '/payments')
+
 api.add_resource(AdminRegistration, '/admins/register')
 api.add_resource(UserRegistration, '/users/register')
 api.add_resource(AdminLogin, '/admins/login')
