@@ -730,7 +730,7 @@ class ReturnRequestById(Resource):
     
 # Checkout Management (User)
 class CheckoutManagement(Resource):
-    def post(self, UserID):
+     def post(self, UserID):
         data = request.get_json()
         Cart_Type = data.get('Cart_Type')  # Indicates lending or purchasing cart
 
@@ -742,23 +742,26 @@ class CheckoutManagement(Resource):
         if not cart:
             return {'message': 'Cart not found'}, 404
 
-        cart_items = CartItem.query.filter_by(CartID=cart.CartID).all()
+        Cart_Items = CartItem.query.filter_by(CartID=cart.CartID).all()
 
         if Cart_Type == 'Lending':
-            for item in cart_items:
+            for item in Cart_Items:
                 lending_request = BookLendingRequest(
                     UserID=UserID,
+                    AdminID=item.book.AdminID,
                     BookID=item.BookID,
                     Status='Pending'
                 )
                 db.session.add(lending_request)
                 db.session.delete(item)
+
         elif Cart_Type == 'Purchase':
             total_amount = 0
-            for item in cart_items:
+            for item in Cart_Items:
                 total_amount += item.book.Price * item.Quantity
                 book_order = BookOrder(
                     UserID=UserID,
+                    AdminID=cart.AdminID,
                     BookID=item.BookID,
                     Status='Pending'
                 )
@@ -767,7 +770,7 @@ class CheckoutManagement(Resource):
 
             purchase = Purchase(
                 UserID=UserID,
-                AdminID=item.book.AdminID,
+                AdminID=cart.AdminID,
                 OrderID=book_order.OrderID,
                 Total_Amount=total_amount,
                 Purchase_Date=datetime.utcnow()
@@ -778,6 +781,61 @@ class CheckoutManagement(Resource):
         db.session.commit()
 
         return {'message': 'Checkout successful'}, 200
+
+    # def post(self, UserID):
+    #     data = request.get_json()
+    #     Cart_Type = data.get('Cart_Type')  # Indicates lending or purchasing cart
+    #     UserID = data.get('UserID')
+
+    #     user = User.query.get(UserID)
+    #     if not user:
+    #         return {'message': 'User not found'}, 404
+
+    #     cart = Cart.query.filter_by(UserID=UserID, CartID=Cart.CartID).first()
+    #     if not cart:
+    #         return {'message': 'Cart not found'}, 404
+
+    #     cart_items = CartItem.query.filter_by(CartID=cart.CartID).all()
+
+    #     if Cart_Type == 'Lending':
+    #         for item in cart_items:
+    #             lending_request = BookLendingRequest(
+    #                 UserID=data.get('UserID'),
+    #                 BookID=data.get('BookID'),
+    #                 Status=data.get('Pending')
+    #             )
+    #             db.session.add(lending_request)
+    #             db.session.commit()
+    #             db.session.delete(cart)
+    #             db.session.commit()
+
+    #     elif Cart_Type == 'Purchase':
+    #         total_amount = 0
+    #         for item in cart_items:
+    #             total_amount += item.book.Price * item.Quantity
+    #             book_order = BookOrder(
+    #                 UserID=data.get('UserID'),
+    #                 BookID=data.get('BookID'),
+    #                 Status=data.get('Pending')
+    #             )
+    #             db.session.add(book_order)
+    #             db.session.commit()
+    #             db.session.delete(cart)
+    #             db.session.commit()
+                
+    #         purchase = Purchase(
+    #             UserID=UserID,
+    #             AdminID=data.get('AdminID'),
+    #             OrderID=data.get('OrderID'),
+    #             Total_Amount=total_amount,
+    #             Purchase_Date=datetime.utcnow()
+    #         )
+    #         db.session.add(purchase)
+
+    #     db.session.delete(cart)
+    #     db.session.commit()
+
+    #     return {'message': 'Checkout successful'}, 200
 
     
 # Cart Management (User)
@@ -807,12 +865,12 @@ class CartManagement(Resource):
 class CartManagementDelete(Resource):
     def delete(self, UserID, CartID):
         Cart_Type = request.args.get('Cart_Type')  # Indicates lending or purchasing cart
-
+        
         user = User.query.get(UserID)
         if not user:
             return {'message': 'User not found'}, 404
 
-        cart = Cart.query.filter_by(UserID=UserID, Cart_Type=Cart_Type).first()
+        cart = Cart.query.filter_by(UserID=UserID, CartID=CartID).first()
         if not cart:
             return {'message': 'Cart not found'}, 404
 
@@ -820,10 +878,13 @@ class CartManagementDelete(Resource):
         if cart_item:
             db.session.delete(cart_item)
             db.session.commit()
+            db.session.delete(cart)
+            db.session.commit()
+            
             return {'message': 'Book removed from the cart successfully'}, 200
         else:
             return {'message': 'Book not found in the cart'}, 404
-
+        
 class CartList(Resource):
     def get(self):
         carts = Cart.query.all()
@@ -980,7 +1041,19 @@ class CartList(Resource):
 #         )
 
 #         return response
+
+class OrderManagement(Resource):
     
+    def put(self, OrderID):
+        data = request.get_json()
+        order = BookOrder.query.get(OrderID)
+        if order:
+            order.Status = data['Status']
+            db.session.commit()
+            return {'message': 'Order status updated successfully'}, 200
+        else:
+            return {'message': 'Order not found'}, 404
+  
 class BookOrdersList(Resource):
     def get(self):
         bookorders = BookOrder.query.all()
@@ -1238,23 +1311,7 @@ class UserLogin(Resource):
 
         return response
 
-class DeleteAll(Resource):
-    def delete(self, OrderID):
-        admin = BookOrder.query.filter_by(OrderID=OrderID).all()
-       
-        db.session.delete(admin)
-        db.session.commit()
 
-        response_dict = {"message": "Admin details successfully deleted"}
-
-        response = make_response(
-            jsonify(response_dict),
-            200
-        )
-
-        return response
-
-api.add_resource(DeleteAll, '/delete')
 api.add_resource(AdminRegistration, '/admins/register')
 api.add_resource(UserRegistration, '/users/register')
 api.add_resource(AdminLogin, '/admins/login')
@@ -1286,6 +1343,7 @@ api.add_resource(CartManagement, '/users/<int:UserID>/carts')
 api.add_resource(CartManagementDelete, '/users/<int:UserID>/carts/<int:CartID>')
 # api.add_resource(CartItemList, "/cartitems")
 # api.add_resource(CartItemById, "/cartitems/<int:CartItemID>")
+api.add_resource(OrderManagement, '/admins/order/<int:OrderID>')
 api.add_resource(BookOrdersList, "/bookorders")
 api.add_resource(BookOrderById, "/bookorders/<int:OrderID>")
 api.add_resource(AdminsList, "/admins")

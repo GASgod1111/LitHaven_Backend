@@ -36,7 +36,7 @@ book_images = [
 def seed_data():
     # Create admins
     admins = []
-    for _ in range(30):
+    for _ in range(10):
         admin = Admin(
             Username=fake.user_name(),
             Password=fake.password(),
@@ -48,7 +48,7 @@ def seed_data():
 
     # Create users
     users = []
-    for _ in range(30):
+    for _ in range(10):
         user = User(
             Username=fake.user_name(),
             Password=fake.password(),
@@ -60,14 +60,14 @@ def seed_data():
 
     # Create books
     books = []
-    for _ in range(30):
+    for _ in range(10):
         book = Book(
             Book_Image= random.choice(book_images),
             Title=fake.sentence(nb_words=3, variable_nb_words=True, ext_word_list=None),
             Author=fake.name(),
             Genre=fake.random_element(elements=('Fiction', 'Non-Fiction', 'Mystery', 'Romance', 'Science Fiction', 'Fantasy')),
             Description=fake.text(),
-            Price=random.randint(5, 50),
+            Price=random.randint(5, 20),
             Date_Uploaded=datetime.now()
         )
         books.append(book)
@@ -75,11 +75,11 @@ def seed_data():
 
     # Create book orders
     book_orders = []
-    for _ in range(30):
+    for _ in range(10):
         book_order = BookOrder(
-            UserID=random.randint(1, 100),
-            AdminID=random.randint(1, 100),
-            BookID=random.randint(1, 100),
+            UserID=random.randint(1, 10),
+            AdminID=random.randint(1, 10),
+            BookID=random.randint(1, 10),
             Status=fake.random_element(elements=('Approved', 'Rejected', 'Pending')),
         )
         book_orders.append(book_order)
@@ -87,11 +87,11 @@ def seed_data():
 
     # Create book lending requests
     book_lending_requests = []
-    for _ in range(30):
+    for _ in range(10):
         book_lending_request = BookLendingRequest(
-            UserID=random.randint(1, 100),
-            AdminID=random.randint(1, 100),
-            BookID=random.randint(1, 100),
+            UserID=random.randint(1, 10),
+            AdminID=random.randint(1, 10),
+            BookID=random.randint(1, 10),
             Status=fake.random_element(elements=('Approved', 'Rejected', 'Pending')),
         )
         book_lending_requests.append(book_lending_request)
@@ -100,10 +100,10 @@ def seed_data():
     # Create carts
     carts = []
 
-    for _ in range(30):
+    for _ in range(10):
         cart = Cart(
-            UserID=random.randint(1, 100),
-            AdminID=random.randint(1, 100),
+            UserID=random.randint(1, 10),
+            AdminID=random.randint(1, 10),
             Cart_Type=random.choice(['Purchase', 'Lending'])
                 
         )
@@ -113,23 +113,23 @@ def seed_data():
        
     # Create cart items
     cart_items = []
-    for _ in range(30):
+    for _ in range(10):
         cart_item = CartItem(
-            CartID=random.randint(1, 100),
-            BookID=random.randint(1, 100),
-            Quantity=random.randint(1, 100)
+            CartID=random.randint(1, 10),
+            BookID=random.randint(1, 10),
+            Quantity=random.randint(1, 10)
         )
         cart_items.append(cart_item)
         db.session.add(cart_item)
 
     # Create purchases
     purchases = []
-    for _ in range(30):
+    for _ in range(10):
         purchase = Purchase(
-            UserID=random.randint(1, 100),
-            AdminID=random.randint(1, 100),
-            OrderID=random.randint(1, 100),
-            Total_Amount=random.randint(5, 900),
+            UserID=random.randint(1, 10),
+            AdminID=random.randint(1, 10),
+            OrderID=random.randint(1, 10),
+            Total_Amount=random.randint(5, 200),
             Purchase_Date=datetime.now()
         )
         purchases.append(purchase)
@@ -137,11 +137,11 @@ def seed_data():
 
     # Create return requests
     return_requests = []
-    for _ in range(30):
+    for _ in range(10):
         return_request = ReturnRequest(
-            UserID=random.randint(1, 100),
-            AdminID=random.randint(1, 100),
-            OrderID=random.randint(1, 100),
+            UserID=random.randint(1, 10),
+            AdminID=random.randint(1, 10),
+            OrderID=random.randint(1, 10),
             Return_Reason=fake.random_element(elements=('Finished Reading', 'Lending period expired', 'Got bored of the book')),
             Status=fake.random_element(elements=('Approved', 'Pending')),
         )
