@@ -4,7 +4,7 @@ from Models import Admin, Book, BookOrder, BookLendingRequest, User, Cart, CartI
 from faker import Faker
 from random import randint
 from datetime import datetime
-
+from faker.providers.phone_number import Provider
 
 fake = Faker()
 
@@ -32,6 +32,22 @@ book_images = [
     'https://m.media-amazon.com/images/I/41mjffV8MPL._SY445_SX342_.jpg'
 ]
 
+
+
+class KenyaPhoneNumberProvider(Provider):
+    """
+    A Provider for phone number.
+    """
+
+    def kenya_phone_number(self):
+        return f'+254 {self.msisdn()[3:]}'
+
+
+def main():
+    fake = Faker()
+    fake.add_provider(KenyaPhoneNumberProvider)
+    return fake.kenya_phone_number()
+
 # Create sample data using Faker to seed the database
 def seed_data():
     # Create admins
@@ -41,7 +57,8 @@ def seed_data():
             Username=fake.user_name(),
             Password=fake.password(),
             Email=fake.email(),
-            Full_Name=fake.name()
+            Full_Name=fake.name(),
+            Phone_Number=main()
         )
         admins.append(admin)
         db.session.add(admin)
@@ -53,7 +70,8 @@ def seed_data():
             Username=fake.user_name(),
             Password=fake.password(),
             Email=fake.email(),
-            Full_Name=fake.name()
+            Full_Name=fake.name(),
+            Phone_Number=main()
         )
         users.append(user)
         db.session.add(user)
