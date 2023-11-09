@@ -133,7 +133,8 @@ def user_serializer(users: User):
             "Username": user.Username,
             "Password": user.Password,
             "Email": user.Email,
-            "Full_Name": user.Full_Name
+            "Full_Name": user.Full_Name,
+            "Phone_Number": user.Phone_Number
         }
         response.append(user_dict)
     return response
@@ -187,7 +188,8 @@ def admin_serializer(admins: Admin):
             "Username": admin.Username,
             "Password": admin.Password,
             "Email": admin.Email,
-            "Full_Name": admin.Full_Name
+            "Full_Name": admin.Full_Name,
+            "Phone_Number": admin.Phone_Number
         }
         response.append(admin_dict)
     return response

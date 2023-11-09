@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from serializer import book_response_serializer, book_price_serializer, book_genre_serializer, book_title_serializer, book_purchase_serializer, book_lending_serializer, book_return_request_serializer, user_serializer, cart_serializer, cart_item_serializer, book_order_serializer, admin_serializer, book_date_uploaded_serializer
 from datetime import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from payments import *
+
 
 class CaseInsensitiveApi(Api):
     def url_for(self, resource, **values):
@@ -89,34 +91,6 @@ class UserBooksList(Resource):
         response = book_response_serializer(books)
         return make_response(jsonify(response), 200)
 
-    def post(self):
-        data = request.get_json()
-        new_book = Book(
-            Book_Image= data.get("Book_Image"),
-            Title=data.get("Title"),
-            Author=data.get("Author"),
-            Genre=data.get("Genre"),
-            Description=data.get("Title"),
-            Price=data.get("Price"),
-            Date_Uploaded=data.get("Date_Uploaded"),
-        )
-
-        db.session.add(new_book)
-        db.session.commit()
-
-        new_book_dict = {
-            "id": new_book.BookID,
-            "Book_Image": new_book.Book_Image,
-            "title": new_book.Title,
-            "author": new_book.Author,
-            "genre": new_book.Genre,
-            "description": new_book.Description,
-            "price": new_book.Price,
-            "date_uploaded": new_book.Date_Uploaded,
-        }
-
-        return make_response(jsonify(new_book_dict), 200)
-    
 class AdminBooksList(Resource):
     # to retrieve all books
     def get(self):
@@ -366,7 +340,8 @@ class UsersList(Resource):
             Username=data.get("Username"),
             Password=data.get("Password"),
             Email=data.get("Email"),
-            Full_Name=data.get("Full_Name")
+            Full_Name=data.get("Full_Name"),
+            Phone_Number=data.get("Phone_Number")
         )
 
         db.session.add(new_user)
@@ -377,7 +352,8 @@ class UsersList(Resource):
             "Username": new_user.Username,
             "Password": new_user.Password,
             "Email": new_user.Email,
-            "Full_Name": new_user.Full_Name
+            "Full_Name": new_user.Full_Name,
+            "Phone_Number": new_user.Phone_Number
         }
 
         return make_response(jsonify(new_user_dict), 200)
@@ -395,6 +371,7 @@ class UserById(Resource):
              "Password": user.Password,
              "Email": user.Email,
              "Full_Name": user.Full_Name,
+             "Phone_Number": user.Phone_Number
             }
 
             return make_response(jsonify(user_dict), 200)
@@ -418,6 +395,7 @@ class UserById(Resource):
              "Password": user.Password,
              "Email": user.Email,
              "Full_Name": user.Full_Name,
+             "Phone_Number": user.Phone_Number
             }
  
         response = make_response(jsonify(user_dict), 200)
@@ -845,7 +823,7 @@ class CartManagement(Resource):
         BookID = data.get('BookID')
         Quantity = data.get('Quantity')
         Cart_Type = data.get('Cart_Type')  # Indicates lending or purchasing cart
-
+        
         user = User.query.get(UserID)
         if not user:
             return {'message': 'User not found'}, 404
@@ -1043,7 +1021,7 @@ class CartList(Resource):
 #         return response
 
 class OrderManagement(Resource):
-    
+    # for admin to change the order status to approved or rejected
     def put(self, OrderID):
         data = request.get_json()
         order = BookOrder.query.get(OrderID)
@@ -1150,7 +1128,8 @@ class AdminsList(Resource):
             Username=data.get("Username"),
             Password = data.get("Password"),
             Email=data.get("Email"),
-            Full_Name=data.get("Full_Name")
+            Full_Name=data.get("Full_Name"),
+            Phone_Number=data.get("Phone_Number")
         )
         db.session.add(new_admin)
         db.session.commit()
@@ -1160,7 +1139,8 @@ class AdminsList(Resource):
             "Username": new_admin.Username,
             "Password": new_admin.Password,
             "Email": new_admin.Email,
-            "Full_Name": new_admin.Full_Name
+            "Full_Name": new_admin.Full_Name,
+            "Phone_Number":new_admin.Phone_Number
         }
         return make_response(jsonify(new_admin_dict), 200)
     
@@ -1177,7 +1157,8 @@ class AdminById(Resource):
             "Username": admin.Username,
             "Password": admin.Password,
             "Email": admin.Email,
-            "Full_Name": admin.Full_Name
+            "Full_Name": admin.Full_Name,
+            "Phone_Number":admin.Phone_Number
         }
             return make_response(jsonify(admin_dict), 200)
 
@@ -1199,7 +1180,8 @@ class AdminById(Resource):
             "Username": admin.Username,
             "Password": admin.Password,
             "Email": admin.Email,
-            "Full_Name": admin.Full_Name
+            "Full_Name": admin.Full_Name,
+            "Phone_Number": admin.Phone_Number
         }
         response = make_response(jsonify(admin_dict ), 200)
 
@@ -1227,6 +1209,7 @@ class AdminRegistration(Resource):
         password = data.get('Password')
         Email = data.get('Email')
         Full_Name = data.get('Full_Name')
+        Phone_Number=data.get("Phone_Number")
 
         if not username or not password:
             return {"message": "Missing username or password"}, 400
@@ -1236,7 +1219,7 @@ class AdminRegistration(Resource):
         if user:
             return {"message": "Admin already exists"}, 400
 
-        new_user = Admin(Username=username, Password=password, Email=Email, Full_Name=Full_Name)
+        new_user = Admin(Username=username, Password=password, Email=Email, Full_Name=Full_Name, Phone_Number=Phone_Number)
         db.session.add(new_user)
         db.session.commit()
 
@@ -1250,6 +1233,7 @@ class UserRegistration(Resource):
         password = data.get('Password')
         Email = data.get('Email')
         Full_Name = data.get('Full_Name')
+        Phone_Number=data.get("Phone_Number")
 
         if not username or not password:
             return {"message": "Missing username or password"}, 400
@@ -1259,7 +1243,7 @@ class UserRegistration(Resource):
         if user:
             return {"message": "User already exists"}, 400
 
-        new_user = User(Username=username, Password=password, Email=Email, Full_Name=Full_Name)
+        new_user = User(Username=username, Password=password, Email=Email, Full_Name=Full_Name, Phone_Number=Phone_Number)
         db.session.add(new_user)
         db.session.commit()
 
@@ -1312,6 +1296,75 @@ class UserLogin(Resource):
         return response
 
 
+# class PaymentsResource(Resource):
+#     def post(self):
+#         data = request.get_json()
+    
+#         UserID = data.get('UserID')
+#         Total_Amount = data.get('Total_Amount')
+#         Phone_Number = data.get('Phone_Number')
+
+#         user = Purchase.query.get(UserID)
+
+#         if user:
+#             response = initiate_stk_push(Phone_Number, Total_Amount)
+        
+#             if response.get('ResponseCode') == "0":
+#                 new_purchase = Purchase(UserID=UserID, Total_Amount=Total_Amount)
+#                 db.session.add(new_purchase)
+#                 db.session.commit()
+#                 return jsonify({'message': 'Purchase initiated successfully!'})
+#             else:
+#                 # Handle the case where the STK push failed
+#                 return jsonify({'error': 'STK push payment failed. Purchase not recorded.'})
+
+#         return jsonify({'error': 'User not found'})
+#     # UserID = request.args.get('UserID') 
+    
+#     # @donations_ns.expect(donation_parser)
+#     # @donations_ns.marshal_with(donation_response_model, code=201)
+#     # @donations_ns.doc(responses={201: 'Donation initiated successfully!', 400: 'Bad request'})
+#     # def post(self):
+#     #     data = request.get_json()
+#     #     UserID = data.get('UserID')
+#     #     # data = donation_parser.parse_args()
+
+    #     BookID = data['BookID']
+    #     amount = data['amount']
+    #     Phone_Number = data['Phone_Number']
+    #     is_anonymous = data['is_anonymous']
+    #     OrderID = data['OrderID']
+    #     is_one_time_payment = data['is_one_time_payment']  # New parameter
+
+    #     # Logic with your charity ID determination
+    #     OrderID = request.args.get('OrderID')
+
+    #     if OrderID is None:
+    #         return {'error': 'Invalid OrderID'}, 400
+
+    #     user = User.query.get(UserID)
+
+    #     if user:
+    #         response = initiate_stk_push(Phone_Number, amount)
+
+    #         if response.get('ResponseCode') == "0":
+    #             new_payment = Purchase(
+    #                 UserID=UserID,
+    #                 BookID=BookID,
+    #                 amount=amount,
+    #                 is_anonymous=is_anonymous,
+    #                 is_one_time_payment=is_one_time_payment  # Set the donation type
+    #             )
+    #             db.session.add(new_payment)
+    #             db.session.commit()
+    #             return {'message': 'Payment initiated successfully!'}, 201
+    #         else:
+    #             # Handle the case where the STK push failed
+    #             return {'error': 'STK push payment failed. Payment not recorded.'}, 400
+
+    #     return {'error': 'User not found'}, 400
+
+# api.add_resource(PaymentsResource, '/payments')
 api.add_resource(AdminRegistration, '/admins/register')
 api.add_resource(UserRegistration, '/users/register')
 api.add_resource(AdminLogin, '/admins/login')
@@ -1320,7 +1373,7 @@ api.add_resource(Home, "/")
 api.add_resource(BooksList, "/books")
 api.add_resource(AdminBooksList, "/admins/books")
 api.add_resource(UserBooksList, "/users/books")
-api.add_resource(AdminBookById, "/admins//books/<int:BookID>")
+api.add_resource(AdminBookById, "/admins/books/<int:BookID>")
 api.add_resource(BookById, "/books/<int:BookID>")
 api.add_resource(UsersBookByTitle, "/users/books/title/<string:Title>")
 api.add_resource(UsersBookByGenre, "/users/books/genre/<string:Genre>") 
