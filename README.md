@@ -39,11 +39,10 @@
 
 <h2>Technologies Used</h2>
 
-<p>
-    - Python (>=3.6)
-    - Flask
-    - SQLAlchemy
-</p>
+<p>- Python (>=3.6)</p>
+<p>- Flask </p>
+<p>- SQLAlchemy</p>
+
 
 <h2>Sample Data</h2>
 
@@ -51,12 +50,11 @@
 
 <h2>Project Team</h2>
 
-<p>
-    - Frida Gathima
-    - Reagan Peter
-    - Issak Said
-    - Olive Muthui
-    - Ian Imbuki
+<p>1. Frida Gathima </p>
+<p>2. Reagan Peter </p>
+<p>3. Issak Said</p>
+<p>4. Olive Muthui </p>
+<p>5. Ian Imbuki </p>
 </p>
 
 <h2>MIT Licence</h2>
